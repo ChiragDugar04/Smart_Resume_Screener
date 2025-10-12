@@ -22,3 +22,14 @@ class ParsedResume(BaseModel):
     skills: List[str] = Field(description="List of technical and soft skills mentioned.")
     education: List[Education] = Field(description="List of educational qualifications.")
     experience: List[Experience] = Field(description="List of professional experiences.")
+    
+class MatchResult(BaseModel):
+    match_score: int = Field(description="An integer score from 1 to 10 for candidate-job fit.")
+    summary: str = Field(description="A concise, one-sentence summary of the candidate's suitability.")
+    strengths: List[str] = Field(description="Specific skills or experiences that align well with the job.")
+    weaknesses: List[str] = Field(description="Key requirements from the job that are missing or weak in the resume.")
+
+
+class ScreeningResult(BaseModel):
+    resume_data: ParsedResume
+    match_data: MatchResult

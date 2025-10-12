@@ -1,3 +1,4 @@
+from .models import MatchResult
 import fitz 
 from typing import IO
 
@@ -98,3 +99,60 @@ def parse_resume_with_llm(resume_text: str) -> ParsedResume:
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         raise
+    
+def match_resume_to_jd_with_llm(resume_json: str, job_description: str) -> MatchResult:
+    """
+    Compares a parsed resume (in JSON format) with a job description using the Gemini API.
+
+    Args:
+        resume_json: The parsed resume data as a JSON string.
+        job_description: The text of the job description.
+
+    Returns:
+        A MatchResult Pydantic object with score and justification.
+    """
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+    prompt = f"""
+    You are an expert HR analyst and technical recruiter with 15 years of experience, specializing in AI-driven talent acquisition.
+    Your task is to perform a detailed, unbiased comparison between a candidate's resume and a job description.
+
+    Analyze the provided structured resume data and the job description. Focus on the alignment of skills, the relevance of experience, and educational background.
+
+    ---JOB DESCRIPTION START---
+    {job_description}
+    ---JOB DESCRIPTION END---
+
+    ---CANDIDATE'S RESUME (JSON) START---
+    {resume_json}
+    ---CANDIDATE'S RESUME (JSON) END---
+
+    Based on your analysis, provide your output *only* in the following JSON format. Do not include any other text, explanations, or markdown formatting.
+
+    {{
+      "match_score": <An integer score from 1 to 10, where 1 is a very poor fit and 10 is a perfect match>,
+      "summary": "<A concise, one-sentence summary of the candidate's suitability.>",
+      "strengths": [
+        "<A specific skill, experience, or qualification from the resume that directly aligns with the job description.>",
+        "<Another key strength.>"
+      ],
+      "weaknesses": [
+        "<A key requirement from the job description that is missing or weakly represented in the resume.>",
+        "<Another potential gap.>"
+      ]
+    }}
+    """
+
+    try:
+        response = model.generate_content(prompt)
+        cleaned_json_string = response.text.strip().replace("```json", "").replace("```", "").strip()
+        parsed_data = json.loads(cleaned_json_string)
+        
+        # Validate against the MatchResult Pydantic model
+        validated_result = MatchResult(**parsed_data)
+        return validated_result
+
+    except Exception as e:
+        print(f"Error during resume matching: {e}")
+        print(f"Raw LLM response was: {response.text}")
+        raise ValueError("Failed to match resume. The LLM response was not valid JSON.")
