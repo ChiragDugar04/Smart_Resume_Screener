@@ -15,14 +15,6 @@ app = FastAPI(
     lifespan=lifespan # Add the lifespan event
 )
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from . import services, models
-
-app = FastAPI(
-    title="Smart Resume Screener API",
-    description="An API to parse resumes and match them with job descriptions using AI.",
-    version="1.0.0"
-)
 
 @app.get("/")
 def read_root():

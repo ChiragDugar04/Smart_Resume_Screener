@@ -8,7 +8,9 @@ class Education(BaseModel):
     graduation_year: Optional[int] = Field(None, description="Year of graduation.")
 
 class Experience(BaseModel):
-    company: str = Field(description="Name of the company.")
+    # --- THIS IS THE KEY CHANGE ---
+    # We are making `company` optional to handle cases where the LLM can't find it.
+    company: Optional[str] = Field(None, description="Name of the company.")
     role: str = Field(description="Job title or role.")
     start_date: str = Field(description="Start date of the employment.")
     end_date: Optional[str] = Field(description="End date of the employment (or 'Present').")
@@ -22,13 +24,12 @@ class ParsedResume(BaseModel):
     skills: List[str] = Field(description="List of technical and soft skills mentioned.")
     education: List[Education] = Field(description="List of educational qualifications.")
     experience: List[Experience] = Field(description="List of professional experiences.")
-    
+
 class MatchResult(BaseModel):
     match_score: int = Field(description="An integer score from 1 to 10 for candidate-job fit.")
     summary: str = Field(description="A concise, one-sentence summary of the candidate's suitability.")
     strengths: List[str] = Field(description="Specific skills or experiences that align well with the job.")
     weaknesses: List[str] = Field(description="Key requirements from the job that are missing or weak in the resume.")
-
 
 class ScreeningResult(BaseModel):
     resume_data: ParsedResume
