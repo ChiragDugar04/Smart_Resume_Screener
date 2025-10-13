@@ -1,31 +1,38 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, MetaData
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-import json
+import datetime
 
-# Define the database URL. SQLite will create a file named 'screener.db'
 DATABASE_URL = "sqlite:///./screener.db"
 
-# Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-# Define a session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base class for our declarative models
 Base = declarative_base()
 
-# Define the 'screenings' table model
-class Screening(Base):
-    __tablename__ = "screenings"
+# NEW: Candidate Table - Stores unique information about each person.
+class Candidate(Base):
+    __tablename__ = "candidates"
 
     id = Column(Integer, primary_key=True, index=True)
-    job_description = Column(Text, nullable=False)
+    full_name = Column(String, index=True)
+    email = Column(String, unique=True, index=True) # Email is the unique identifier
+    parsed_resume_data = Column(Text, nullable=False) # Full parsed resume as JSON
+    
+    # This links a candidate to all their screening records
+    screenings = relationship("ScreeningRecord", back_populates="candidate")
 
-    # We will store JSON data as text
-    resume_data = Column(Text, nullable=False) # Storing ParsedResume as a JSON string
-    match_result = Column(Text, nullable=False) # Storing MatchResult as a JSON string
+# NEW: Screening Record Table - Stores each screening event.
+class ScreeningRecord(Base):
+    __tablename__ = "screening_records"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    job_role_title = Column(String, index=True) # e.g., "Senior Data Scientist"
+    match_score = Column(Integer, index=True) # Score from 0-100
+    candidate_id = Column(Integer, ForeignKey("candidates.id")) # Links to the candidate
+    job_description_text = Column(Text)
+    screening_date = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    candidate = relationship("Candidate", back_populates="screenings")
 
-# Create the table in the database (if it doesn't exist)
 def create_db_and_tables():
     Base.metadata.create_all(bind=engine)
