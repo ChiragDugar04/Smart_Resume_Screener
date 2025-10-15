@@ -21,7 +21,7 @@ RESUME-SCREENER/
 ```
 ## Demo Video
 
-- **Video Demo:** [Watch the walkthrough]([https://youtu.be/JzD-zPvhGPw](https://drive.google.com/file/d/1CudUOxlNVSmCuZ0OIsCWfJ1VP894eYh0/view?usp=sharing))
+- **Video Demo:** [Watch the walkthrough](https://drive.google.com/file/d/1CudUOxlNVSmCuZ0OIsCWfJ1VP894eYh0/view?usp=sharing)
 
 ## Architecture
 
